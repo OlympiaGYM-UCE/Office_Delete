@@ -29,28 +29,28 @@ jobs:
 
     - name: Build Docker Image
       run: |
-        docker build -t business-list-find:latest .
-        sudo docker save business-list-find:latest > business-list-find.tar
-        sudo chmod 644 business-list-find.tar
+        docker build -t office-delete:latest .
+        sudo docker save office-delete:latest > office-delete.tar
+        sudo chmod 644 office-delete.tar
 
     - name: Transfer Docker Image
-      uses: appleboy/scp-action@v0.1.6
-      with:
-        host: ${{ secrets.OFFICE_DELETE_EC2_HOST }} 
-        username: ec2-user
-        key: ${{ secrets.OFICCE_DELETE_EC2_SSH_KEY }}  
-        source: business-list-find.tar
-        target: /home/ec2-user/
-
-    - name: SSH to EC2 and Deploy
-      uses: appleboy/ssh-action@v0.1.6
+      uses: appleboy/scp-action@v0.1.7
       with:
         host: ${{ secrets.OFFICE_DELETE_EC2_HOST }}
         username: ec2-user
-        key: ${{ secrets.OFICCE_DELETE_EC2_SSH_KEY }}
+        key: ${{ secrets.OFFICE_DELETE_EC2_SSH_KEY }}
+        source: office-delete.tar
+        target: /home/ec2-user/
+
+    - name: SSH to EC2 and Deploy
+      uses: appleboy/ssh-action@v0.1.7
+      with:
+        host: ${{ secrets.OFFICE_DELETE_EC2_HOST }}
+        username: ec2-user
+        key: ${{ secrets.OFFICE_DELETE_EC2_SSH_KEY }}
         script: |
-          sudo docker load < /home/ec2-user/business-list-find.tar
-          sudo docker stop business-list-find || true
-          sudo docker rm business-list-find || true
-          sudo docker run -d -p 8081:8081 --name business-list-find business-list-find:latest
-          rm /home/ec2-user/business-list-find.tar
+          sudo docker load < /home/ec2-user/office-delete.tar
+          sudo docker stop office-delete || true
+          sudo docker rm office-delete || true
+          sudo docker run -d -p 8080:8080 --name office-delete office-delete:latest
+          rm /home/ec2-user/office-delete.tar
